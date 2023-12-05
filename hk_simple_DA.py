@@ -62,7 +62,8 @@ class PCA_Analysis:
         self.cumulative_explained_variance = np.cumsum(self.explained_variance)
         print(f"Cumulative Explained Variance: {self.cumulative_explained_variance}")
 
-        column_names = self.elastic_naming(form='Principal Component', n=self.n_components)
+        # TODO : elastic_naming is temporary functions. It should be updated into the data based naming function.
+        column_names = elastic_naming(form='Principal Component', n=self.n_components)
         self.pca_df = pd.DataFrame(data=self.principal_components, columns=column_names)
 
         return self
