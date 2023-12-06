@@ -29,7 +29,7 @@ plt.show()
 X = df['Feature_1'].astype(float).values
 
 num_trees = 200
-shingle_size = 48
+shingle_size = 4 #48
 tree_size = 1000
 
 points = rrcf.shingle(X, size=shingle_size)
@@ -54,7 +54,6 @@ for tree in forest:
     
 avg_codisp /= index
 avg_codisp.index = df.iloc[(shingle_size-1):].index
-
 
 ############# Isolation Forest for the comparison
 contamination = ratio_accidental
