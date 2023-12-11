@@ -29,7 +29,7 @@ plt.show()
 X = df['Feature_1'].astype(float).values
 
 num_trees = 200
-shingle_size = 48
+shingle_size = 4 #48
 tree_size = 1000
 
 points = rrcf.shingle(X, size=shingle_size)
@@ -54,7 +54,6 @@ for tree in forest:
     
 avg_codisp /= index
 avg_codisp.index = df.iloc[(shingle_size-1):].index
-
 
 ############# Isolation Forest for the comparison
 contamination = ratio_accidental
@@ -101,3 +100,52 @@ ax[1].set_xlim(df.index[0], df.index[-1])
 plt.tight_layout()
 
 plt.show()
+
+
+############################################################################################
+## Live Data control
+# Create an RRCF forest
+
+forest = []
+for _ in range(num_trees):
+    tree = rrcf.RCTree()
+    forest.append(tree)
+
+# Function to update the forest with new data point
+def update_forest(point, index):
+    """
+    Update the RRCF forest with a new data point.
+    :param point: New data point
+    :param index: Index of the new data point
+    """
+    for tree in forest:
+        # If the tree is already full, drop the oldest point (FIFO)
+        if len(tree.leaves) > tree_size:
+            tree.forget_point(index - tree_size)
+        # Insert the new point into the tree
+        tree.insert_point(point, index=index)
+
+# Function to compute anomaly score
+def compute_anomaly_score(point, index):
+    """
+    Compute the anomaly score for a new data point.
+    :param point: New data point
+    :param index: Index of the new data point
+    """
+    score = 0.0
+    for tree in forest:
+        # Insert point into tree and compute codisp (anomaly score)
+        tree.insert_point(point, index=index)
+        score += tree.codisp(index)
+        # Remove point to allow for next iteration
+        tree.forget_point(index)
+    return score / num_trees
+
+# Example: Streaming data
+data_stream = np.random.randn(1000)  # Replace with your real-time data stream
+for index, point in enumerate(data_stream, start=1):
+    update_forest(point, index)
+    anomaly_score = compute_anomaly_score(point, index)
+    print(f"Data point: {point}, Anomaly Score: {anomaly_score}")
+
+    # Add your logic here to handle anomalies based on the score
